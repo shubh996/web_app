@@ -43,59 +43,88 @@ export default class App extends Component{
   };
 
 
-  componentWillMount(){
-    var c = this.props.b_uid.split("/")
-    var b_uid = c[1]
+  // componentWillMount(){
+  //   var b_uid = this.props.b_uid
+
+
+  //   console.log("uid  : " , b_uid ) 
 
   
-    firebase.firestore().collection('business_page').doc(b_uid).update({Page_Visit : firebase.firestore.FieldValue.increment(1) })
+  //   firebase.firestore().collection('business_page').doc(b_uid).update({Page_Visit : firebase.firestore.FieldValue.increment(1) })
 
-  }
-
-
-   componentDidMount () {
-
-    var c = this.props.b_uid.split("/")
-    var b_uid = c[1]
+  // }
 
 
-        firebase.firestore().collection('business_page').doc(b_uid).onSnapshot(doc => { this.setState({ business: doc.data() , timing:doc.data().timing, pv:doc.data().Page_Visit,length_like : doc.data().Page_Like.length ,    });  });
+  async componentDidMount () {
 
-        firebase.firestore().collection("business_page").doc(b_uid).collection("products").onSnapshot(querySnapshot => {
-          const groups_b = []; const groups_n = [];  const groups_l = []; 
-  
+  var b_uid = this.props.b_uid
+
+
+    console.log(" props on App.js  : " , b_uid ) 
+
+
+        firebase.firestore().collection('business_page').where("subdomain","==",b_uid).onSnapshot(querySnapshot => {
+          const groups = [];
+
           querySnapshot.forEach(documentSnapshot => {
-  
-            if(documentSnapshot.data().tag ){
-              groups_l.push({
-                ...documentSnapshot.data(),
-                key: documentSnapshot.id,
+
+            groups.push({
+              ...documentSnapshot.data(),
+              uid : documentSnapshot.id
             });
-            } 
-  
-            
-  
-            if(documentSnapshot.data().tag==="New Arrival"){
-              groups_n.push({
-                ...documentSnapshot.data(),
-                key: documentSnapshot.id,
-            });
-            } 
-  
-            if(documentSnapshot.data().tag==="Best Selling Product"){
-              groups_b.push({
-                ...documentSnapshot.data(),
-                key: documentSnapshot.id,
-            });
-            } 
-          
-          
-          
+
+        
           });
+
+          this.setState({ business: groups[0], timing:groups[0].timing, pv:groups[0].Page_Visit,length_like : groups[0].Page_Like.length ,    }); 
+
+
+          console.log("business_uid data : " + groups[0].uid)
+          b_uid = groups[0].uid
+
+
+          firebase.firestore().collection("business_page").doc(b_uid).collection("products").onSnapshot(querySnapshot => {
+            const groups_b = []; const groups_n = [];  const groups_l = []; 
+    
+            querySnapshot.forEach(documentSnapshot => {
+    
+              if(documentSnapshot.data().tag ){
+                groups_l.push({
+                  ...documentSnapshot.data(),
+                  key: documentSnapshot.id,
+              });
+              } 
+    
+              
+    
+              if(documentSnapshot.data().tag==="New Arrival"){
+                groups_n.push({
+                  ...documentSnapshot.data(),
+                  key: documentSnapshot.id,
+              });
+              } 
+    
+              if(documentSnapshot.data().tag==="Best Selling Product"){
+                groups_b.push({
+                  ...documentSnapshot.data(),
+                  key: documentSnapshot.id,
+              });
+              } 
+            
+            
+            
+            });
   
+            console.log("inside getting products")
   
-          this.setState({ product_l:groups_l,product_n:groups_n,product_b:groups_b });
-      })
+    
+    
+            this.setState({ product_l:groups_l,product_n:groups_n,product_b:groups_b });
+        })
+          
+        })
+
+        
       
   
     }
@@ -301,10 +330,6 @@ export default class App extends Component{
         <div style={{width:"100%",}}>
 
 
-      
-        
-   
-      
          <Tabs1 >
     
        
@@ -802,10 +827,10 @@ export default class App extends Component{
         </Tabs1>
         
       
-          <footer class={"card row"} style={{ position:"fixed",bottom: "8px",justifyContent:"space-between",paddingTop:"1%",paddingLeft:"8%",paddingBottom:'8px',height:45, width: "103%",backgroundColor:"#fff",borderColor: "#C0C0C0",borderWidth:"0.4px",borderRadius:"-8px",}} >
+          <footer class={"card row"} style={{ position:"fixed",bottom: "0px",justifyContent:"space-between",paddingTop:"3%",paddingLeft:"13%",paddingBottom:'28px',height:75, width: "105%",backgroundColor:"#FFF",borderColor: "#C0C0C0",borderWidth:"0.4px"}} >
                   
 
-                <a class={"row"}  href={`tel:${this.state.business.phone}` } target="_blank" style={{paddingTop:"5px",justifyContent:"center",borderRadius:6,height:35,width:"40%",backgroundColor:"#CD6155"} }>
+                <a class={"row"}  href={`tel:${this.state.business.phone}` } target="_blank" style={{paddingTop:"5px",justifyContent:"center",borderRadius:4,height:35,width:"40%",backgroundColor:"#CD6155"} }>
                   <CallRounded  style={{ fontSize: 22,marginTop:"2px",color:"white" }} />
                   <p  style={{fontSize:16,fontWeight:500, color:"white",justifyContent:"center",marginLeft:"5px"}}>   Call Now  </p>
                 </a>
